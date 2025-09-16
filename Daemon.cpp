@@ -4,6 +4,7 @@
 #include <sys/file.h>
 #include <unistd.h>
 #include <string.h>
+#include "DaemonServer.hpp"
 
 DaemonApp* DaemonApp::instance_ = nullptr;
 
@@ -98,11 +99,11 @@ bool DaemonApp::setup_signals()
 }
 
 bool DaemonApp::init(){
-    if (geteuid() != 0)
-    {
-        std::cerr << "Mat_daemon must run as root." << std::endl;
-        return false;
-    }
+    // if (geteuid() != 0)
+    // {
+    //     std::cerr << "Mat_daemon must run as root." << std::endl;
+    //     return false;
+    // }
     // check log file
     // create server
     if (!create_lock())
@@ -127,5 +128,13 @@ bool DaemonApp::init(){
 
 int DaemonApp::run()
 {
-
+    // while (1)
+    // {
+        // std::cout << "croco" << std::endl;
+        // printf("KKK\n");
+        DaemonServer d;
+        d.run();
+        // std::cout<< "done\n";
+        // return 2;
+    // }
 }

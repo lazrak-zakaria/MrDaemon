@@ -9,5 +9,5 @@ int main()
         printf("hello");
     }
     printf("world");
-    // return app.run();
+    return app.run();
 }
