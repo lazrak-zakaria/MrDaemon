@@ -1,0 +1,131 @@
+#include "Daemon.hpp"
+#include <iostream>
+#include <fcntl.h>
+#include <sys/file.h>
+#include <unistd.h>
+#include <string.h>
+
+DaemonApp* DaemonApp::instance_ = nullptr;
+
+DaemonApp::DaemonApp()
+: lock_path_("/var/lock/matt_daemon.lock"), lock_fd_(-1) {}
+
+DaemonApp::~DaemonApp() {}
+
+bool DaemonApp::create_lock()
+{
+    lock_fd_ = open(lock_path_.c_str(), O_RDWR | O_CREAT, 0644);
+    if(lock_fd_ < 0)
+    {
+        std::cerr << "Can't open: " << lock_path_ << std::endl;
+        return false;
+    }
+    if (flock(lock_fd_, LOCK_EX | LOCK_NB) < 0)
+    {
+        std::cerr << "Can't lock: " << lock_path_ << std::endl;
+        return false;
+    }
+    ftruncate(lock_fd_, 0);
+    char buf[64];
+    int n = snprintf(buf, sizeof(buf), "%d\n", (int)getpid());
+    write(lock_fd_, buf, n);
+    return true;
+}
+
+bool DaemonApp::daemonize()
+{
+    std::cout << "parent fork" << std::endl;
+    std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
+    pid_t pid = fork();
+    if (pid < 0)
+        return false;
+    if (pid == 0)
+    {
+        std::cout << "child" << std::endl;
+        std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
+    }
+    if (pid > 0)
+        exit(0);
+    if (setsid() < 0)
+        return false;
+    std::cout << "after session created" << std::endl;
+    std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
+    
+    signal(SIGHUP, SIG_IGN);
+    pid = fork();
+    if (pid == 0)
+    {
+        std::cout << "grandchild" << std::endl;
+        std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
+    }
+    std::cout << "after second fork" << std::endl;
+
+    if (pid < 0)
+        return false;
+    if (pid > 0)
+        exit(0);
+    
+    umask(0);
+    if (chdir("/") != 0)
+        return false;
+    // int fd = open("/dev/null", O_RDWR);
+    // if (fd >= 0)
+    // {
+    //     dup2(fd, STDIN_FILENO);
+    //     dup2(fd, STDOUT_FILENO);
+    //     dup2(fd, STDERR_FILENO);
+    //     if (fd > 2)
+    //         close(fd);
+    // }
+    return true;
+}
+void DaemonApp::signal_handler(int sig)
+{
+    if (instance_)
+        instance_->stop_ = sig;
+}
+bool DaemonApp::setup_signals()
+{
+    instance_ = this;
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = &DaemonApp::signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGINT, &sa, nullptr);
+    sigaction(SIGTERM, &sa, nullptr);
+    sigaction(SIGQUIT, &sa, nullptr);
+    return true;
+}
+
+bool DaemonApp::init(){
+    if (geteuid() != 0)
+    {
+        std::cerr << "Mat_daemon must run as root." << std::endl;
+        return false;
+    }
+    // check log file
+    // create server
+    if (!create_lock())
+    {
+        std::cerr << "Failed to create lock." << std::endl;
+        //log file # error file lock
+        return false;
+    }
+    if (!daemonize())
+    {
+        std::cerr << "Failed to daemonize." << std::endl;
+        return false;
+    }
+    std::cout << "Daemon initialized successfully." << std::endl;
+    if (!setup_signals())
+    {
+        std::cerr << "Faild to setup signals" << std::endl;
+        return false;
+    }
+    return true;
+}
+
+int DaemonApp::run()
+{
+
+}
