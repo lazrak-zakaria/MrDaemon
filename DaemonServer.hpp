@@ -11,7 +11,7 @@ class DaemonServer
 {
 
     private:
-        std::unordered_map<int, Client*> clients;
+        std::unordered_map<int, Client> clients;
         int                             fdSock;
         struct sockaddr_in              addrServer;
 
