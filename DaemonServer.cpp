@@ -59,7 +59,7 @@ void	DaemonServer::acceptClient(fd_set &readSet)
 	}
 
 	FD_SET(fdSockTmp, &readSet);
-    clients[fdSockTmp] =  Client();
+    clients[fdSockTmp] = nullptr;
 }
 
 void    DaemonServer::run()
