@@ -8,6 +8,7 @@
 #include <vector>
 #include <fstream> 
 #include <unistd.h>
+#include "Tintin_reporter.hpp"
 
 
 std::vector<std::string> split(std::string &s, std::string delimiter) {
@@ -34,7 +35,7 @@ void	DaemonServer::socketBindListen()
     bzero(&addrServer, sizeof(addrServer));
     addrServer.sin_family = AF_INET;
     addrServer.sin_addr.s_addr = INADDR_ANY;
-    addrServer.sin_port = htons(4252);
+    addrServer.sin_port = htons(4232);
 	int optval = 1;
 	setsockopt(fdSock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof (optval));
     if (bind(fdSock, (struct sockaddr *) &addrServer,
@@ -73,28 +74,22 @@ void	DaemonServer::acceptClient(fd_set &readSet)
     
 }
 
-void    DaemonServer::run()
+bool    DaemonServer::run(Tintin_reporter* report_)
 {
     fd_set              				readSet;
     fd_set              				writeSet;
 
+    std::cout<<"DDDDDDDDDDDDDDDDD\n";
     FD_ZERO(&readSet);
 
     this->socketBindListen();
     
     FD_SET(fdSock, &readSet);
 
-    std::ofstream file("logger.txt", std::ios::out); // logger wont be here
-    if (!file.is_open()) {
-        perror("file");
-        std::cerr << "Error opening file!" << std::endl;
-        return;
-    }
     while (true)
     {
         fd_set	tempReadSet = readSet;
         std::vector<int>    invalidSockets;
-
 
 
         int maxSocket = fdSock;
@@ -134,9 +129,13 @@ void    DaemonServer::run()
                     }
                     it.second.data.append(buf, collected);
 
-                    split(it.second.data, "\n");
-                    for (auto & i : it.second.data)
-                        file << i << std::endl;
+                    std::vector<std::string> arr = split(it.second.data, "\n");
+                    for (auto & data : arr)
+                    {
+                        if ("quit" == data)
+                            return 1;
+                        report_->log(INFO, "User input: " + data);
+                    }
                 }
             }
 
@@ -146,7 +145,7 @@ void    DaemonServer::run()
             }
         }
     }
-    
+    return 0;
 }
 
 

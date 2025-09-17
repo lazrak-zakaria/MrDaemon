@@ -11,6 +11,8 @@ DaemonApp* DaemonApp::instance_ = nullptr;
 DaemonApp::DaemonApp(Tintin_reporter *report)
 : lock_path_("/var/lock/matt_daemon.lock"), lock_fd_(-1) {
     report_  = report;
+    stop_ = 0;
+
 };
 
 DaemonApp::~DaemonApp() {}
@@ -127,28 +129,30 @@ bool DaemonApp::init(){
 
 int DaemonApp::run()
 {
-    // while (1)
-    // {
-        // std::cout << "croco" << std::endl;
-        // printf("KKK\n");
-        DaemonServer d;
-        d.run();
-        // std::cout<< "done\n";
-        // return 2;
-    // }
+    
+    DaemonServer daemon_server;
+
 
     bool quit = true;
     while(quit)
     {
+        std::cout<<"DDDDDDDDDDdsfasdfds\n";
         if (instance_->stop_)
+        {
+
+            std::cout<<"DDDDDDDDDDdsfafdsafdssdfds\n";
             report_->log(INFO, "Signal handler.");
             report_->log(INFO, "Quitting.");
             break;
-        // quit = run server loop
+        }   
+        quit = daemon_server.run(report_);
+
         if (quit) {
             report_->log(INFO, "Quitting.");
             break;
         }
+
     }
+    std::cout << "finish\n";
     return 0;
 };
