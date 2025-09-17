@@ -110,12 +110,14 @@ bool DaemonApp::init(){
     }
     if (!create_lock())
     {
-        report_->log(ERROR, "Failed to create lock.");
+        report_->log(ERROR, "Failed to create lock: " + lock_path_);
         return false;
     }
     if (!daemonize())
     {
-        report_->log(ERROR, "Failed to daemonize.");
+        std::string d = ("Failed to daemonize: ");
+        d.append(std::to_string(getpid()));
+        report_->log(ERROR,d);
         return false;
     }
     report_->log(INFO, "Daemon initialized successfully.");
