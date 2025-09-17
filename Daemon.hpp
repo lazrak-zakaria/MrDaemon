@@ -6,11 +6,11 @@
 #include <signal.h>
 #include <sys/stat.h>
 
-
+#include "Tintin_reporter.hpp"
 class DaemonApp
 {
     public:
-        DaemonApp();
+        DaemonApp(Tintin_reporter * report);
         ~DaemonApp();
 
         bool init();
@@ -24,6 +24,7 @@ class DaemonApp
         bool create_lock();
         bool daemonize();
         bool setup_signals();
+        Tintin_reporter *report_;
 };
 
 #endif

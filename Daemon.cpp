@@ -8,8 +8,10 @@
 
 DaemonApp* DaemonApp::instance_ = nullptr;
 
-DaemonApp::DaemonApp()
-: lock_path_("/var/lock/matt_daemon.lock"), lock_fd_(-1) {}
+DaemonApp::DaemonApp(Tintin_reporter *report)
+: lock_path_("/var/lock/matt_daemon.lock"), lock_fd_(-1) {
+    report_  = report;
+};
 
 DaemonApp::~DaemonApp() {}
 
@@ -104,23 +106,20 @@ bool DaemonApp::init(){
         std::cerr << "Mat_daemon must run as root." << std::endl;
         return false;
     }
-    // check log file
-    // create server
     if (!create_lock())
     {
-        std::cerr << "Failed to create lock." << std::endl;
-        //log file # error file lock
+        report_->log(ERROR, "Failed to create lock.");
         return false;
     }
     if (!daemonize())
     {
-        std::cerr << "Failed to daemonize." << std::endl;
+        report_->log(ERROR, "Failed to daemonize.");
         return false;
     }
-    std::cout << "Daemon initialized successfully." << std::endl;
+    report_->log(INFO, "Daemon initialized successfully.");
     if (!setup_signals())
     {
-        std::cerr << "Faild to setup signals" << std::endl;
+        report_->log(ERROR, "Faild to setup signals");
         return false;
     }
     return true;
@@ -142,8 +141,14 @@ int DaemonApp::run()
     while(quit)
     {
         if (instance_->stop_)
-            //  log signal arrive
-            // log quite
-            return false;
+            report_->log(INFO, "Signal handler.");
+            report_->log(INFO, "Quitting.");
+            break;
+        // quit = run server loop
+        if (quit) {
+            report_->log(INFO, "Quitting.");
+            break;
+        }
     }
-}
+    return 0;
+};
