@@ -9,7 +9,7 @@
 #include <fstream> 
 #include <unistd.h>
 #include "Tintin_reporter.hpp"
-
+#include <errno.h>
 
 std::vector<std::string> split(std::string &s, std::string delimiter) {
     std::vector<std::string> tokens;
@@ -24,13 +24,20 @@ std::vector<std::string> split(std::string &s, std::string delimiter) {
 }
 
 
-void	DaemonServer::socketBindListen()
+DaemonServer::DaemonServer(Tintin_reporter* report_)
+{
+    this->report_ = report_; 
+}
+
+
+bool	DaemonServer::socketBindListen()
 {
 	fdSock = socket(AF_INET, SOCK_STREAM, 0);
     if (fdSock == -1)
     {
-        perror("socket");
-        exit(1);
+        char *error_message = strerror(errno);
+        report_->log(ERROR, error_message);
+        return 1;
     }
     bzero(&addrServer, sizeof(addrServer));
     addrServer.sin_family = AF_INET;
@@ -41,14 +48,18 @@ void	DaemonServer::socketBindListen()
     if (bind(fdSock, (struct sockaddr *) &addrServer,
               sizeof(addrServer)) < 0) 
     {
-        perror("bind");
-        exit(1);
+        char *error_message = strerror(errno);
+        report_->log(ERROR, error_message);
+        return 1;
+
     }
     if (listen(fdSock, SOMAXCONN))
 	{
-		perror("listen");
-        exit(1);
+        char *error_message = strerror(errno);
+        report_->log(ERROR, error_message);
+        return 1;
 	}
+    return 0;
 }
 
 
@@ -65,8 +76,9 @@ void	DaemonServer::acceptClient(fd_set &readSet)
 	fdSockTmp = accept(fdSock, (struct sockaddr*)&clientSockaddr,  &clientSockaddrLength);
 	if (fdSockTmp == -1)
 	{
-		std::cerr << "connetion error\n";
-        return ;
+        char *error_message = strerror(errno);
+        report_->log(ERROR, error_message);
+        return;
 	}
 
 	FD_SET(fdSockTmp, &readSet);
@@ -74,15 +86,15 @@ void	DaemonServer::acceptClient(fd_set &readSet)
     
 }
 
-bool    DaemonServer::run(Tintin_reporter* report_)
+bool    DaemonServer::run()
 {
     fd_set              				readSet;
     fd_set              				writeSet;
 
-    std::cout<<"DDDDDDDDDDDDDDDDD\n";
     FD_ZERO(&readSet);
 
-    this->socketBindListen();
+    if (this->socketBindListen())
+        return 1;
     
     FD_SET(fdSock, &readSet);
 
@@ -99,7 +111,9 @@ bool    DaemonServer::run(Tintin_reporter* report_)
         int selectAnswer = select(maxSocket + 1, &tempReadSet, 0, 0, 0);
 		if (selectAnswer == -1)
 		{
-            std::cout<<"exit\n";
+            if (errno == EINTR) {
+                return 1;
+            }
             continue;
         }
         else if (selectAnswer)
@@ -109,7 +123,7 @@ bool    DaemonServer::run(Tintin_reporter* report_)
                 if (clients.size() <= 3)
                     acceptClient(readSet);
                 else
-                    std::cerr << "user 4 tried to connect" << "\n" ;//loger
+                    report_->log(ERROR, "Connection limit reached. A maximum of 3 clients can connect at the same time.");
             }
 
             for (auto &it : clients)
@@ -125,6 +139,8 @@ bool    DaemonServer::run(Tintin_reporter* report_)
                     {
                         invalidSockets.push_back(clientFdSock);
                         FD_CLR(clientFdSock, &readSet);
+                        report_->log(INFO, "User Disconnected");
+                        
                         continue ;
                     }
                     it.second.data.append(buf, collected);

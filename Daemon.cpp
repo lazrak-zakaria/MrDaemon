@@ -132,29 +132,16 @@ bool DaemonApp::init(){
 int DaemonApp::run()
 {
     
-    DaemonServer daemon_server;
+    DaemonServer daemon_server(report_);
 
 
-    bool quit = true;
-    while(quit)
-    {
-        std::cout<<"DDDDDDDDDDdsfasdfds\n";
-        if (instance_->stop_)
-        {
+    daemon_server.run();
 
-            std::cout<<"DDDDDDDDDDdsfafdsafdssdfds\n";
-            report_->log(INFO, "Signal handler.");
-            report_->log(INFO, "Quitting.");
-            break;
-        }   
-        quit = daemon_server.run(report_);
+    if (instance_->stop_)
+        report_->log(INFO, "Signal handler.");
 
-        if (quit) {
-            report_->log(INFO, "Quitting.");
-            break;
-        }
+    report_->log(INFO, "Quitting.");
 
-    }
-    std::cout << "finish\n";
+
     return 0;
 };

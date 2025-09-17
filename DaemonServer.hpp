@@ -14,11 +14,11 @@ class DaemonServer
         std::unordered_map<int, Client> clients;
         int                             fdSock;
         struct sockaddr_in              addrServer;
-        
+        Tintin_reporter*                report_;
     public:
-        void	socketBindListen();
+        bool	socketBindListen();
         void    acceptClient(fd_set &readSet);
-        bool    run(Tintin_reporter *report_);
-        
+        bool    run();
+        DaemonServer(Tintin_reporter* report_);
 
 };
