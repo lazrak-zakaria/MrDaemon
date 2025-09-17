@@ -1,0 +1,5 @@
+From: Joseph <josephardev@gmail.com>
+To: Recipient <josephardev@gmail.com>
+Subject: Test Email from C++
+
+Hello from C++ using curl!

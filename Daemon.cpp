@@ -99,11 +99,11 @@ bool DaemonApp::setup_signals()
 }
 
 bool DaemonApp::init(){
-    // if (geteuid() != 0)
-    // {
-    //     std::cerr << "Mat_daemon must run as root." << std::endl;
-    //     return false;
-    // }
+    if (geteuid() != 0)
+    {
+        std::cerr << "Mat_daemon must run as root." << std::endl;
+        return false;
+    }
     // check log file
     // create server
     if (!create_lock())
@@ -137,4 +137,13 @@ int DaemonApp::run()
         // std::cout<< "done\n";
         // return 2;
     // }
+
+    bool quit = true;
+    while(quit)
+    {
+        if (instance_->stop_)
+            //  log signal arrive
+            // log quite
+            return false;
+    }
 }

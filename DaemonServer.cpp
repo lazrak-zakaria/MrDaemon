@@ -7,6 +7,22 @@
 #include "./DaemonServer.hpp"
 #include <vector>
 #include <fstream> 
+#include <unistd.h>
+
+
+std::vector<std::string> split(std::string &s, std::string delimiter) {
+    std::vector<std::string> tokens;
+    size_t pos = 0;
+    std::string token;
+    while ((pos = s.find(delimiter)) != std::string::npos) {
+        token = s.substr(0, pos);
+        tokens.push_back(token);
+        s.erase(0, pos + delimiter.length() );
+    }
+    return tokens;
+}
+
+
 void	DaemonServer::socketBindListen()
 {
 	fdSock = socket(AF_INET, SOCK_STREAM, 0);
@@ -17,12 +33,6 @@ void	DaemonServer::socketBindListen()
     }
     bzero(&addrServer, sizeof(addrServer));
     addrServer.sin_family = AF_INET;
-	// if (!inet_aton("127.0.0.1", &addrServer.sin_addr))
-	// {
-    //     std::cerr << "the address is not valid\n";
-    //     exit(1);
-	// }
-
     addrServer.sin_addr.s_addr = INADDR_ANY;
     addrServer.sin_port = htons(4252);
 	int optval = 1;
@@ -59,7 +69,7 @@ void	DaemonServer::acceptClient(fd_set &readSet)
 	}
 
 	FD_SET(fdSockTmp, &readSet);
-    clients[fdSockTmp] = Client(); // later
+    clients[fdSockTmp] = Client();
     
 }
 
@@ -69,13 +79,12 @@ void    DaemonServer::run()
     fd_set              				writeSet;
 
     FD_ZERO(&readSet);
-    FD_ZERO(&writeSet);
-
 
     this->socketBindListen();
+    
     FD_SET(fdSock, &readSet);
 
-    std::ofstream file("example.txt", std::ios::out);
+    std::ofstream file("logger.txt", std::ios::out); // logger wont be here
     if (!file.is_open()) {
         perror("file");
         std::cerr << "Error opening file!" << std::endl;
@@ -83,9 +92,7 @@ void    DaemonServer::run()
     }
     while (true)
     {
-        std::cout<<"form\n";
         fd_set	tempReadSet = readSet;
-		fd_set	tempWriteSet = writeSet;
         std::vector<int>    invalidSockets;
 
 
@@ -102,11 +109,13 @@ void    DaemonServer::run()
         }
         else if (selectAnswer)
         {
-            std::cout<<"exadfasdfasdfadsit\n";
-
-
             if (FD_ISSET(fdSock, &tempReadSet))
-					acceptClient(readSet);
+			{
+                if (clients.size() <= 3)
+                    acceptClient(readSet);
+                else
+                    std::cerr << "user 4 tried to connect" << "\n" ;//loger
+            }
 
             for (auto &it : clients)
             {
@@ -124,23 +133,20 @@ void    DaemonServer::run()
                         continue ;
                     }
                     it.second.data.append(buf, collected);
-                    file << it.second.data <<std::endl;
-                    it.second.data = "";
+
+                    split(it.second.data, "\n");
+                    for (auto & i : it.second.data)
+                        file << i << std::endl;
                 }
             }
 
-
             for (auto &fd : invalidSockets){
-                
+                close(fd);
+                clients.erase(fd);
             }
-            std::cout<<"form\n";
-
         }
-
-		
     }
     
-
 }
 
 
