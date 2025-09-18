@@ -108,6 +108,11 @@ bool DaemonApp::init(){
         std::cerr << "Mat_daemon must run as root." << std::endl;
         return false;
     }
+    if (report_->init())
+    {
+        std::cerr << "Failed to open log file." << std::endl;
+        return false;
+    }
     if (!create_lock())
     {
         report_->log(ERROR, "Failed to create lock: " + lock_path_);

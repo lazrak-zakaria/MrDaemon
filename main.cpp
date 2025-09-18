@@ -13,7 +13,7 @@
 int main()
 {
     Tintin_reporter reporter;
-    reporter.init();
+    // reporter.init();
     DaemonApp app(&reporter);
     if (!app.init())
     {
