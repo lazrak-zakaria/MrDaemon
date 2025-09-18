@@ -19,22 +19,22 @@ bool Tintin_reporter::create_dir()
         if (S_ISDIR(st.st_mode) == 0)
         {
             printf("dsssss");
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
     if (mkdir("/var/log/matt_daemon", 0755) == -1)
     {
         printf("llllll|");
-        return false;
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool Tintin_reporter::init()
 {
-    if (!create_dir())
-        return true;
+    if (create_dir())
+        return false;
     Info_.open("/var/log/matt_daemon/Info.log", std::ios::out | std::ios::app);
     Error_.open("/var/log/matt_daemon/Error.log", std::ios::out | std::ios::app);
     Log_.open("/var/log/matt_daemon/Log.log", std::ios::out | std::ios::app);

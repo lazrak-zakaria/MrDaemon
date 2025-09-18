@@ -31,9 +31,6 @@ bool DaemonApp::create_lock()
         return false;
     }
     ftruncate(lock_fd_, 0);
-    char buf[64];
-    int n = snprintf(buf, sizeof(buf), "%d\n", (int)getpid());
-    write(lock_fd_, buf, n);
     return true;
 }
 
@@ -82,6 +79,9 @@ bool DaemonApp::daemonize()
     //     if (fd > 2)
     //         close(fd);
     // }
+    char buf[64];
+    int n = snprintf(buf, sizeof(buf), "%d\n", (int)getpid());
+    write(lock_fd_, buf, n);
     return true;
 }
 void DaemonApp::signal_handler(int sig)
@@ -137,29 +137,22 @@ bool DaemonApp::init(){
 int DaemonApp::run()
 {
     
-    DaemonServer daemon_server;
+    DaemonServer daemon_server(report_);
 
 
-    bool quit = true;
-    while(quit)
-    {
-        std::cout<<"DDDDDDDDDDdsfasdfds\n";
+  
+    daemon_server.run();
         if (instance_->stop_)
         {
 
             std::cout<<"DDDDDDDDDDdsfafdsafdssdfds\n";
             report_->log(INFO, "Signal handler.");
-            report_->log(INFO, "Quitting.");
-            break;
+
         }   
-        quit = daemon_server.run(report_);
 
-        if (quit) {
+
             report_->log(INFO, "Quitting.");
-            break;
-        }
 
-    }
-    std::cout << "finish\n";
+
     return 0;
 };
