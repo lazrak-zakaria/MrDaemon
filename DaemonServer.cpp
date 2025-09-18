@@ -11,7 +11,44 @@
 #include "Tintin_reporter.hpp"
 #include <errno.h>
 
-std::vector<std::string> split(std::string &s, std::string delimiter) {
+DaemonServer::DaemonServer()
+    : fdSock(-1), report_(nullptr)
+{
+}
+
+DaemonServer::DaemonServer(const DaemonServer& other)
+    : clients(other.clients),
+      fdSock(other.fdSock),
+      addrServer(other.addrServer),
+      report_(other.report_)
+{
+}
+
+
+DaemonServer& DaemonServer::operator=(const DaemonServer& other)
+{
+    if (this != &other)
+    {
+        clients    = other.clients;
+        fdSock     = other.fdSock;
+        addrServer = other.addrServer;
+        report_    = other.report_;
+    }
+    return *this;
+}
+
+DaemonServer::~DaemonServer()
+{
+}
+
+
+
+DaemonServer::DaemonServer(Tintin_reporter* report_)
+: fdSock(-1), report_(report_)
+{
+}
+
+std::vector<std::string>  DaemonServer::split(std::string &s, std::string delimiter) {
     std::vector<std::string> tokens;
     size_t pos = 0;
     std::string token;
@@ -23,15 +60,11 @@ std::vector<std::string> split(std::string &s, std::string delimiter) {
     return tokens;
 }
 
-
-DaemonServer::DaemonServer(Tintin_reporter* report_)
-{
-    this->report_ = report_; 
-}
-
-
 bool	DaemonServer::socketBindListen()
 {
+
+    report_->log(INFO, "Creating server.");
+
 	fdSock = socket(AF_INET, SOCK_STREAM, 0);
     if (fdSock == -1)
     {
@@ -59,6 +92,8 @@ bool	DaemonServer::socketBindListen()
         report_->log(ERROR, error_message);
         return 1;
 	}
+    report_->log(INFO, "Server created");
+
     return 0;
 }
 
@@ -93,8 +128,6 @@ bool    DaemonServer::run()
 
     FD_ZERO(&readSet);
 
-    if (this->socketBindListen())
-        return 1;
     
     FD_SET(fdSock, &readSet);
 
@@ -161,6 +194,8 @@ bool    DaemonServer::run()
             }
         }
     }
+                    report_->log(ERROR, "Connection limit reached. A maximum of 3 clients can connect at the same time.");
+
     return 0;
 }
 

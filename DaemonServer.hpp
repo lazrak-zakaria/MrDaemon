@@ -1,4 +1,7 @@
 
+#ifndef DAEMONSERVER_HPP
+#define DAEMONSERVER_HPP
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -7,6 +10,8 @@
 #include <unordered_map>
 #include "./Client.hpp"
 #include "./Tintin_reporter.hpp"
+#include <vector>
+
 class DaemonServer
 {
 
@@ -15,10 +20,22 @@ class DaemonServer
         int                             fdSock;
         struct sockaddr_in              addrServer;
         Tintin_reporter*                report_;
+
+        DaemonServer();                    
+        DaemonServer(const DaemonServer& other);     
+        DaemonServer& operator=(const DaemonServer& other);
+
     public:
         bool	socketBindListen();
         void    acceptClient(fd_set &readSet);
         bool    run();
+        std::vector<std::string>  split(std::string &s, std::string delimiter);
+        
         DaemonServer(Tintin_reporter* report_);
+        ~DaemonServer();                               
+
+
 
 };
+
+#endif 

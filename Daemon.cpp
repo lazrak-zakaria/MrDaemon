@@ -8,10 +8,11 @@
 
 DaemonApp* DaemonApp::instance_ = nullptr;
 
-DaemonApp::DaemonApp(Tintin_reporter *report)
+DaemonApp::DaemonApp(Tintin_reporter *report , DaemonServer * daemon_server)
 : lock_path_("/var/lock/matt_daemon.lock"), lock_fd_(-1) {
     report_  = report;
     stop_ = 0;
+    this->daemon_server = daemon_server;
 
 };
 
@@ -113,6 +114,10 @@ bool DaemonApp::init(){
         std::cerr << "Failed to open log file." << std::endl;
         return false;
     }
+
+    if (this->daemon_server->socketBindListen())
+        return false;
+
     if (!create_lock())
     {
         report_->log(ERROR, "Failed to create lock: " + lock_path_);
@@ -136,22 +141,17 @@ bool DaemonApp::init(){
 
 int DaemonApp::run()
 {
-    
-    DaemonServer daemon_server(report_);
+    this->daemon_server->run();
+    if (instance_->stop_)
+    {
+
+        std::cout<<"DDDDDDDDDDdsfafdsafdssdfds\n";
+        report_->log(INFO, "Signal handler.");
+
+    }   
 
 
-  
-    daemon_server.run();
-        if (instance_->stop_)
-        {
-
-            std::cout<<"DDDDDDDDDDdsfafdsafdssdfds\n";
-            report_->log(INFO, "Signal handler.");
-
-        }   
-
-
-            report_->log(INFO, "Quitting.");
+        report_->log(INFO, "Quitting.");
 
 
     return 0;

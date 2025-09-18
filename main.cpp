@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <ctime>
 #include <vector>
+#include "DaemonServer.hpp"
 
 
 
@@ -13,14 +14,13 @@
 int main()
 {
     Tintin_reporter reporter;
-    // reporter.init();
-    DaemonApp app(&reporter);
+    DaemonServer daemon_server(&reporter);
+    DaemonApp app(&reporter, &daemon_server);
+
     if (!app.init())
-    {
-        printf("hello");
         return 1;
-    }
-    printf("world");
+    
+
     return app.run();
 
 }

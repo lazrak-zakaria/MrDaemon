@@ -1,16 +1,16 @@
 #ifndef DAEMON_HPP
 #define DAEMON_HPP
 
-
 #include <string>
 #include <signal.h>
 #include <sys/stat.h>
 
 #include "Tintin_reporter.hpp"
+#include "DaemonServer.hpp"
 class DaemonApp
 {
     public:
-        DaemonApp(Tintin_reporter * report);
+        DaemonApp(Tintin_reporter * report, DaemonServer * daemon_server);
         ~DaemonApp();
 
         bool init();
@@ -25,6 +25,7 @@ class DaemonApp
         bool daemonize();
         bool setup_signals();
         Tintin_reporter *report_;
+        DaemonServer * daemon_server;
 };
 
 #endif
