@@ -17,7 +17,7 @@ class Tintin_reporter
         ~Tintin_reporter();
         bool init();
         void log(level flog, std::string message);
-        int create_dir();
+        bool create_dir();
         std::string getTimestamp();
         std::string levelToString(level f);
         void send_mail(std::string msg);

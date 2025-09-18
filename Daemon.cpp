@@ -31,9 +31,6 @@ bool DaemonApp::create_lock()
         return false;
     }
     ftruncate(lock_fd_, 0);
-    char buf[64];
-    int n = snprintf(buf, sizeof(buf), "%d\n", (int)getpid());
-    write(lock_fd_, buf, n);
     return true;
 }
 
@@ -82,6 +79,9 @@ bool DaemonApp::daemonize()
     //     if (fd > 2)
     //         close(fd);
     // }
+    char buf[64];
+    int n = snprintf(buf, sizeof(buf), "%d\n", (int)getpid());
+    write(lock_fd_, buf, n);
     return true;
 }
 void DaemonApp::signal_handler(int sig)
@@ -106,6 +106,11 @@ bool DaemonApp::init(){
     if (geteuid() != 0)
     {
         std::cerr << "Mat_daemon must run as root." << std::endl;
+        return false;
+    }
+    if (report_->init())
+    {
+        std::cerr << "Failed to open log file." << std::endl;
         return false;
     }
     if (!create_lock())
@@ -135,12 +140,18 @@ int DaemonApp::run()
     DaemonServer daemon_server(report_);
 
 
+  
     daemon_server.run();
+        if (instance_->stop_)
+        {
 
-    if (instance_->stop_)
-        report_->log(INFO, "Signal handler.");
+            std::cout<<"DDDDDDDDDDdsfafdsafdssdfds\n";
+            report_->log(INFO, "Signal handler.");
 
-    report_->log(INFO, "Quitting.");
+        }   
+
+
+            report_->log(INFO, "Quitting.");
 
 
     return 0;

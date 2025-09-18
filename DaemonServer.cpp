@@ -42,7 +42,7 @@ bool	DaemonServer::socketBindListen()
     bzero(&addrServer, sizeof(addrServer));
     addrServer.sin_family = AF_INET;
     addrServer.sin_addr.s_addr = INADDR_ANY;
-    addrServer.sin_port = htons(4232);
+    addrServer.sin_port = htons(4231);
 	int optval = 1;
 	setsockopt(fdSock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof (optval));
     if (bind(fdSock, (struct sockaddr *) &addrServer,
@@ -150,7 +150,7 @@ bool    DaemonServer::run()
                     {
                         if ("quit" == data)
                             return 1;
-                        report_->log(INFO, "User input: " + data);
+                        report_->log(LOG, "User input: " + data);
                     }
                 }
             }
@@ -163,5 +163,4 @@ bool    DaemonServer::run()
     }
     return 0;
 }
-
 

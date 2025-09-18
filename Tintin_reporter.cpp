@@ -10,18 +10,41 @@ Tintin_reporter::~Tintin_reporter()
     if (Log_.is_open()) Log_.close();
 };
 
+bool Tintin_reporter::create_dir()
+{
+     struct stat st;
+    printf("++++++++");
+    if (stat("/var/log/matt_daemon", &st) == 0)
+    {
+        if (S_ISDIR(st.st_mode) == 0)
+        {
+            printf("dsssss");
+            return false;
+        }
+        return true;
+    }
+    if (mkdir("/var/log/matt_daemon", 0755) == -1)
+    {
+        printf("llllll|");
+        return true;
+    }
+    return false;
+}
+
 bool Tintin_reporter::init()
 {
-    int fd = mkdir("/var/log/matt_daemon", 0777);
-    if (fd == -1)
+    if (create_dir())
         return false;
-    Info_.open("/var/log/matt_daemon/Info.log");
-    Error_.open("/var/log/matt_daemon/Error.log");
-    Log_.open("/var/log/matt_daemon/Log.log");
+    Info_.open("/var/log/matt_daemon/Info.log", std::ios::out | std::ios::app);
+    Error_.open("/var/log/matt_daemon/Error.log", std::ios::out | std::ios::app);
+    Log_.open("/var/log/matt_daemon/Log.log", std::ios::out | std::ios::app);
 
     if (!Info_ || !Error_ || !Log_)
-        return false;
-    return true;
+    {
+        printf("dddd");
+        return true;
+    }
+    return false;
 };
 
 std::string Tintin_reporter::getTimestamp()
