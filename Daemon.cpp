@@ -19,31 +19,28 @@ DaemonApp::DaemonApp(Tintin_reporter *report , DaemonServer * daemon_server)
 DaemonApp::~DaemonApp()
 {
     remove_lock();
-    printf("destructure___");
 };
 
 void DaemonApp::remove_lock() {
-    if (lock_fd_ >= 0) {
+    if (lock_fd_ != -1) {
         flock(lock_fd_, LOCK_UN);
         close(lock_fd_);
         lock_fd_ = -1;
+        unlink(lock_path_.c_str());
     }
-    unlink(lock_path_.c_str());
+    report_->log(INFO, "Quitting.");
 }
 
 bool DaemonApp::create_lock()
 {
-    lock_fd_ = open(lock_path_.c_str(), O_RDWR | O_CREAT, 0644);
+    lock_fd_ = open(lock_path_.c_str(), O_RDWR | O_CREAT | O_EXCL, 0644);
     if(lock_fd_ < 0)
     {
-        report_->log(ERROR, std::string("Can't open: ").append(lock_path_));
+        std::cerr << "Can't open :" << lock_path_ << std::endl;
         return false;
     }
     if (flock(lock_fd_, LOCK_EX | LOCK_NB) < 0)
-    {
-        report_->log(ERROR, std::string("Error file locked ").append(lock_path_));
         return false;
-    }
     ftruncate(lock_fd_, 0);
     return true;
 }
@@ -160,7 +157,6 @@ int DaemonApp::run()
         report_->log(INFO, "Signal handler. ");
         report_->send_mail("Daemon Quitted Using Signal");
     }
-    report_->log(INFO, "Quitting.");
 
 
     return 0;
