@@ -11,6 +11,7 @@ class DaemonApp
 {
     public:
         DaemonApp(Tintin_reporter * report, DaemonServer * daemon_server);
+        DaemonApp();
         ~DaemonApp();
 
         bool init();
@@ -21,6 +22,8 @@ class DaemonApp
         static DaemonApp* instance_;
         static void signal_handler(int sig);
         volatile sig_atomic_t stop_;
+        DaemonApp(const DaemonApp& other) = delete;
+        DaemonApp& operator=(const DaemonApp& other) = delete;
         bool create_lock();
         bool daemonize();
         bool setup_signals();

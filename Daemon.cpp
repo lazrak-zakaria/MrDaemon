@@ -13,7 +13,15 @@ DaemonApp::DaemonApp(Tintin_reporter *report , DaemonServer * daemon_server)
     report_  = report;
     stop_ = 0;
     this->daemon_server = daemon_server;
+};
 
+DaemonApp::DaemonApp()
+{
+    lock_path_="/var/lock/matt_daemon.lock";
+    lock_fd_ = -1;
+    report_  = nullptr;
+    stop_ = 0;
+    this->daemon_server = daemon_server;
 };
 
 DaemonApp::~DaemonApp()
@@ -21,8 +29,10 @@ DaemonApp::~DaemonApp()
     remove_lock();
 };
 
-void DaemonApp::remove_lock() {
-    if (lock_fd_ != -1) {
+void DaemonApp::remove_lock()
+{
+    if (lock_fd_ != -1)
+    {
         flock(lock_fd_, LOCK_UN);
         close(lock_fd_);
         lock_fd_ = -1;
