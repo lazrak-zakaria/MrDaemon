@@ -24,6 +24,7 @@ class DaemonApp
         bool create_lock();
         bool daemonize();
         bool setup_signals();
+        void remove_lock();
         Tintin_reporter *report_;
         DaemonServer * daemon_server;
 };

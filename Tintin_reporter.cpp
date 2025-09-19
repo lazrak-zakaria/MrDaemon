@@ -1,6 +1,7 @@
 #include "Tintin_reporter.hpp"
 #include <sys/stat.h>
 #include <ctime>
+#include <unistd.h>
 
 Tintin_reporter::Tintin_reporter(){};
 Tintin_reporter::~Tintin_reporter()
@@ -12,28 +13,23 @@ Tintin_reporter::~Tintin_reporter()
 
 bool Tintin_reporter::create_dir()
 {
-     struct stat st;
-    printf("++++++++");
+    struct stat st;
+
     if (stat("/var/log/matt_daemon", &st) == 0)
     {
-        if (S_ISDIR(st.st_mode) == 0)
-        {
-            printf("dsssss");
-            return false;
-        }
-        return true;
+        if (S_ISDIR(st.st_mode))
+            return true;
+        return false;
     }
     if (mkdir("/var/log/matt_daemon", 0755) == -1)
-    {
-        printf("llllll|");
-        return true;
-    }
-    return false;
+        return false;
+
+    return true;
 }
 
 bool Tintin_reporter::init()
 {
-    if (create_dir())
+    if (!create_dir())
         return false;
     Info_.open("/var/log/matt_daemon/Info.log", std::ios::out | std::ios::app);
     Error_.open("/var/log/matt_daemon/Error.log", std::ios::out | std::ios::app);
@@ -42,9 +38,10 @@ bool Tintin_reporter::init()
     if (!Info_ || !Error_ || !Log_)
     {
         printf("dddd");
-        return true;
+        return false;
     }
-    return false;
+    log(INFO, "Started.");
+    return true;
 };
 
 std::string Tintin_reporter::getTimestamp()
@@ -83,18 +80,18 @@ void Tintin_reporter::send_mail(std::string msg)
 {
     std::ofstream email("email.txt");
     email << "From: Joseph <josephardev@gmail.com>\n";
-    email << "To: Recipient <recipient@example.com>\n";
-    email << "Subject: Test Email from C++\n\n";
+    email << "To: Recipient <josephardev@example.com>\n";
+    email << "Subject:Email From DaemonApp\n\n";
     email << msg;
     email.close();
 
     std::string cmd = "curl --url 'smtps://smtp.gmail.com:465' "
                       "--ssl-reqd "
                       "--mail-from 'josephardev@gmail.com' "
-                      "--mail-rcpt 'recipient@example.com' "
-                      "--user 'josephardev@gmail.com:YOUR_APP_PASSWORD' "
+                      "--mail-rcpt 'josephardev@example.com' "
+                      "--user 'josephardev@gmail.com:password' "
                       "--upload-file email.txt";
 
     system(cmd.c_str());
-    std::remove("email.txt");
+    unlink("email.txt");
 };
