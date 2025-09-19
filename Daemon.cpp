@@ -75,7 +75,7 @@ bool DaemonApp::daemonize()
     // std::cout << "after session created" << std::endl;
     // std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
     
-    signal(SIGHUP, SIG_IGN);
+    // signal(SIGHUP, SIG_IGN);
     pid = fork();
     if (pid == 0)
     {
@@ -83,7 +83,6 @@ bool DaemonApp::daemonize()
         // std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
     }
     // std::cout << "after second fork" << std::endl;
-
     if (pid < 0)
         return false;
     if (pid > 0)
@@ -98,8 +97,6 @@ bool DaemonApp::daemonize()
     //     dup2(fd, STDIN_FILENO);
     //     dup2(fd, STDOUT_FILENO);
     //     dup2(fd, STDERR_FILENO);
-    //     if (fd > 2)
-    //         close(fd);
     // }
     char buf[64];
     int n = snprintf(buf, sizeof(buf), "%d\n", getpid());
@@ -162,8 +159,6 @@ int DaemonApp::run()
     this->daemon_server->run();
     if (instance_->stop_)
     {
-
-        std::cout<<"DDDDDDDDDDdsfafdsafdssdfds\n";
         report_->log(INFO, "Signal handler. ");
         report_->send_mail("Daemon Quitted Using Signal");
     }

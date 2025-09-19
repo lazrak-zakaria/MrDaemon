@@ -21,6 +21,8 @@ class Tintin_reporter
         std::string getTimestamp();
         std::string levelToString(level f);
         void send_mail(std::string msg);
+        Tintin_reporter(const Tintin_reporter& other) = delete;
+        Tintin_reporter& operator=(const Tintin_reporter& other) = delete;
     
         private:
             std::ofstream Info_;

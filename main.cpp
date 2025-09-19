@@ -1,8 +1,5 @@
 #include "Daemon.hpp"
 #include <iostream>
-
-
-#include <iostream>
 #include <iomanip>
 #include <ctime>
 #include <vector>
@@ -19,8 +16,6 @@ int main()
 
     if (!app.init())
         return 1;
-    
-
     return app.run();
 
 }

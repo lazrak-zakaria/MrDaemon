@@ -80,7 +80,7 @@ void Tintin_reporter::send_mail(std::string msg)
 {
     std::ofstream email("email.txt");
     email << "From: Joseph <josephardev@gmail.com>\n";
-    email << "To: Recipient <josephardev@example.com>\n";
+    email << "To: Recipient <josephardev@gmail.com>\n";
     email << "Subject:Email From DaemonApp\n\n";
     email << msg;
     email.close();
@@ -88,7 +88,7 @@ void Tintin_reporter::send_mail(std::string msg)
     std::string cmd = "curl --url 'smtps://smtp.gmail.com:465' "
                       "--ssl-reqd "
                       "--mail-from 'josephardev@gmail.com' "
-                      "--mail-rcpt 'josephardev@example.com' "
+                      "--mail-rcpt 'josephardev@gmail.com' "
                       "--user 'josephardev@gmail.com:password' "
                       "--upload-file email.txt";
 
