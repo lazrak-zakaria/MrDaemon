@@ -1,10 +1,10 @@
-#include "Daemon.hpp"
+#include "../hpp/Daemon.hpp"
 #include <iostream>
 #include <fcntl.h>
 #include <sys/file.h>
 #include <unistd.h>
 #include <string.h>
-#include "DaemonServer.hpp"
+
 
 DaemonApp* DaemonApp::instance_ = nullptr;
 

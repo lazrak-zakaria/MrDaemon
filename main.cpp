@@ -1,9 +1,8 @@
-#include "Daemon.hpp"
 #include <iostream>
 #include <iomanip>
 #include <ctime>
 #include <vector>
-#include "DaemonServer.hpp"
+#include "hpp/Daemon.hpp"
 
 
 
