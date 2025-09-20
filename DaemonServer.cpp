@@ -154,7 +154,7 @@ bool    DaemonServer::run()
         {
             if (FD_ISSET(fdSock, &tempReadSet))
 			{
-                if (clients.size() <= 3)
+                if (clients.size() < 3)
                     acceptClient(readSet);
                 else
                     report_->log(ERROR, "Connection limit reached. A maximum of 3 clients can connect at the same time.");
