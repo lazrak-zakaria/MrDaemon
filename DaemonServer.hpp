@@ -24,11 +24,11 @@ class DaemonServer
         DaemonServer();                    
         DaemonServer(const DaemonServer& other);     
         DaemonServer& operator=(const DaemonServer& other);
+        void    acceptClient(fd_set &readSet);
+        void    clear();
 
     public:
         bool	socketBindListen();
-        void    acceptClient(fd_set &readSet);
-        void    clear();
         bool    run();
         std::vector<std::string>  split(std::string &s, std::string delimiter);
         

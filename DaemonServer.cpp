@@ -116,6 +116,13 @@ void	DaemonServer::acceptClient(fd_set &readSet)
         report_->log(ERROR, error_message);
         return;
 	}
+    if (clients.size() >= 3)
+    {
+        close(fdSockTmp);
+        report_->log(ERROR, "Connection limit reached. A maximum of 3 clients can connect at the same time.");
+
+        return;
+    }
 
 	FD_SET(fdSockTmp, &readSet);
     clients[fdSockTmp] = Client();
@@ -154,10 +161,7 @@ bool    DaemonServer::run()
         {
             if (FD_ISSET(fdSock, &tempReadSet))
 			{
-                if (clients.size() < 3)
-                    acceptClient(readSet);
-                else
-                    report_->log(ERROR, "Connection limit reached. A maximum of 3 clients can connect at the same time.");
+                acceptClient(readSet);
             }
 
             for (auto &it : clients)
