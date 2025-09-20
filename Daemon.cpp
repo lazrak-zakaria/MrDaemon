@@ -167,7 +167,5 @@ int DaemonApp::run()
         report_->log(INFO, std::string("Signal handler. type: ").append(name));
         report_->send_mail(std::string("Daemon Quitted Using Signal Of Type ").append(name));
     }
-
-
     return 0;
 };
