@@ -79,8 +79,12 @@ void Tintin_reporter::log(level level, std::string message)
 void Tintin_reporter::send_mail(std::string msg)
 {
     std::ofstream email("email.txt");
-    email << "From: Joseph <josephardev@gmail.com>\n";
-    email << "To: Recipient <josephardev@gmail.com>\n";
+    std::string to = std::getenv("TO");
+    if (to.empty())
+        to = "josephardev@gmail.com";
+    
+    email << "From: Joseph josephardev@gmail.com\n";
+    email << "To: Recipient josephardev@gmail.com\n";
     email << "Subject:Email From DaemonApp\n\n";
     email << msg;
     email.close();

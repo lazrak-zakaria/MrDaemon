@@ -125,7 +125,7 @@ bool DaemonApp::init(){
     }
     if (!create_lock())
     {
-        report_->log(ERROR, "Failed to create lock: " + lock_path_);
+        report_->log(ERROR, " Error file locked. " + lock_path_);
         return false;
     }
     if (this->daemon_server->socketBindListen())
