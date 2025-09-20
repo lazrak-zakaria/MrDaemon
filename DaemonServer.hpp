@@ -28,6 +28,7 @@ class DaemonServer
     public:
         bool	socketBindListen();
         void    acceptClient(fd_set &readSet);
+        void    clear();
         bool    run();
         std::vector<std::string>  split(std::string &s, std::string delimiter);
         

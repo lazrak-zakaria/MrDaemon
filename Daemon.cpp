@@ -159,10 +159,8 @@ int DaemonApp::run()
     this->daemon_server->run();
     if (instance_->stop_)
     {
-        report_->log(INFO, "Signal handler. ");
+        report_->log(INFO, "Signal handler.");
         report_->send_mail("Daemon Quitted Using Signal");
     }
-
-
     return 0;
 };

@@ -39,6 +39,7 @@ DaemonServer& DaemonServer::operator=(const DaemonServer& other)
 
 DaemonServer::~DaemonServer()
 {
+    clear();
 }
 
 
@@ -92,7 +93,7 @@ bool	DaemonServer::socketBindListen()
         report_->log(ERROR, error_message);
         return 1;
 	}
-    report_->log(INFO, "Server created");
+    report_->log(INFO, "Server created.");
 
     return 0;
 }
@@ -182,7 +183,9 @@ bool    DaemonServer::run()
                     for (auto & data : arr)
                     {
                         if ("quit" == data)
+                        {
                             return 1;
+                        }
                         report_->log(LOG, "User input: " + data);
                     }
                 }
@@ -194,8 +197,15 @@ bool    DaemonServer::run()
             }
         }
     }
-                    report_->log(ERROR, "Connection limit reached. A maximum of 3 clients can connect at the same time.");
-
     return 0;
 }
 
+void     DaemonServer::clear()
+{
+        for (auto &it : clients)
+        {
+            int clientFdSock = it.first;
+            close(clientFdSock);
+        }
+        close(fdSock);
+}
