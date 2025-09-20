@@ -58,31 +58,29 @@ bool DaemonApp::create_lock()
 bool DaemonApp::daemonize()
 {
     report_->log(INFO, "Entering Daemon mode.");
-    // std::cout << "parent fork" << std::endl;
-    // std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
+    std::cout << "parent fork" << std::endl;
+    std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
     pid_t pid = fork();
     if (pid < 0)
         return false;
     if (pid == 0)
     {
         std::cout << "child" << std::endl;
-        // std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
+        std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
     }
     if (pid > 0)
         exit(0);
     if (setsid() < 0)
         return false;
-    // std::cout << "after session created" << std::endl;
-    // std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
-    
-    // signal(SIGHUP, SIG_IGN);
+    std::cout << "after session created" << std::endl;
+    std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
     pid = fork();
     if (pid == 0)
     {
         std::cout << "grandchild" << std::endl;
-        // std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
+        std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
     }
-    // std::cout << "after second fork" << std::endl;
+    std::cout << "after second fork" << std::endl;
     if (pid < 0)
         return false;
     if (pid > 0)
@@ -91,13 +89,9 @@ bool DaemonApp::daemonize()
     umask(0);
     if (chdir("/") != 0)
         return false;
-    // int fd = open("/dev/null", O_RDWR);
-    // if (fd >= 0)
-    // {
-    //     dup2(fd, STDIN_FILENO);
-    //     dup2(fd, STDOUT_FILENO);
-    //     dup2(fd, STDERR_FILENO);
-    // }
+    close(STDERR_FILENO);
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
     char buf[64];
     int n = snprintf(buf, sizeof(buf), "%d\n", getpid());
     write(lock_fd_, buf, n);
@@ -112,13 +106,9 @@ void DaemonApp::signal_handler(int sig)
 bool DaemonApp::setup_signals()
 {
     instance_ = this;
-    struct sigaction sa;
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_handler = &DaemonApp::signal_handler;
-    sigemptyset(&sa.sa_mask);
-    sigaction(SIGINT, &sa, nullptr);
-    sigaction(SIGTERM, &sa, nullptr);
-    sigaction(SIGQUIT, &sa, nullptr);
+    signal(SIGINT,&DaemonApp::signal_handler);
+    signal(SIGTERM, &DaemonApp::signal_handler);
+    signal(SIGQUIT, &DaemonApp::signal_handler);
     return true;
 }
 
@@ -153,14 +143,29 @@ bool DaemonApp::init(){
     }
     return true;
 }
+std::string DaemonApp::signal_name(int sig)
+{
+    switch (sig)
+    {
+        case SIGINT:
+            return "SIGINT";
+        case SIGTERM:
+            return "SIGTERM";
+        case SIGQUIT:
+            return "SIGQUIT";
+        default:
+            return std::to_string(sig);
+    }
+};
 
 int DaemonApp::run()
 {
     this->daemon_server->run();
     if (instance_->stop_)
     {
-        report_->log(INFO, "Signal handler. ");
-        report_->send_mail("Daemon Quitted Using Signal");
+        std::string name = signal_name(instance_->stop_); 
+        report_->log(INFO, std::string("Signal handler. type: ").append(name));
+        report_->send_mail(std::string("Daemon Quitted Using Signal Of Type ").append(name));
     }
 
 
