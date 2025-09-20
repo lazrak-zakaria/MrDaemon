@@ -4,12 +4,12 @@
 #include <string.h>
 #include <iostream>
 #include <algorithm>
-#include "./DaemonServer.hpp"
 #include <vector>
 #include <fstream> 
 #include <unistd.h>
-#include "Tintin_reporter.hpp"
 #include <errno.h>
+#include "../hpp/DaemonServer.hpp"
+#include "../hpp/Tintin_reporter.hpp"
 
 DaemonServer::DaemonServer()
     : fdSock(-1), report_(nullptr)
@@ -132,7 +132,6 @@ void	DaemonServer::acceptClient(fd_set &readSet)
 bool    DaemonServer::run()
 {
     fd_set              				readSet;
-    fd_set              				writeSet;
 
     FD_ZERO(&readSet);
 

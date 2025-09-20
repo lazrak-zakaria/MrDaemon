@@ -1,4 +1,4 @@
-#include "Tintin_reporter.hpp"
+#include "../hpp/Tintin_reporter.hpp"
 #include <sys/stat.h>
 #include <ctime>
 #include <unistd.h>
