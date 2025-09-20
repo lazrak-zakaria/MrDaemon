@@ -154,6 +154,8 @@ bool    DaemonServer::run()
             if (errno == EINTR) {
                 return 1;
             }
+            char *error_message = strerror(errno);
+            report_->log(ERROR, error_message);
             continue;
         }
         else if (selectAnswer)
@@ -177,7 +179,6 @@ bool    DaemonServer::run()
                         invalidSockets.push_back(clientFdSock);
                         FD_CLR(clientFdSock, &readSet);
                         report_->log(INFO, "User Disconnected");
-                        
                         continue ;
                     }
                     it.second.data.append(buf, collected);
@@ -200,6 +201,7 @@ bool    DaemonServer::run()
             }
         }
     }
+
     return 0;
 }
 
