@@ -21,7 +21,7 @@ DaemonApp::DaemonApp()
     lock_fd_ = -1;
     report_  = nullptr;
     stop_ = 0;
-    this->daemon_server = daemon_server;
+    this->daemon_server = nullptr;
 };
 
 DaemonApp::~DaemonApp()
@@ -58,40 +58,25 @@ bool DaemonApp::create_lock()
 bool DaemonApp::daemonize()
 {
     report_->log(INFO, "Entering Daemon mode.");
-    std::cout << "parent fork" << std::endl;
-    std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
     pid_t pid = fork();
     if (pid < 0)
         return false;
-    if (pid == 0)
-    {
-        std::cout << "child" << std::endl;
-        std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
-    }
     if (pid > 0)
         exit(0);
+    std::cout << "child" << std::endl;
     if (setsid() < 0)
         return false;
-    std::cout << "after session created" << std::endl;
-    std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
     pid = fork();
-    if (pid == 0)
-    {
-        std::cout << "grandchild" << std::endl;
-        std::cout << "sesion id " << getsid(0) << "  proc id " << getpid() << "  group id " << getpgid(0) << std::endl;
-    }
-    std::cout << "after second fork" << std::endl;
     if (pid < 0)
         return false;
     if (pid > 0)
         exit(0);
-    
     umask(0);
     if (chdir("/") != 0)
         return false;
     close(STDERR_FILENO);
-    close(STDIN_FILENO);
     close(STDOUT_FILENO);
+    close(STDERR_FILENO);
     char buf[64];
     int n = snprintf(buf, sizeof(buf), "%d\n", getpid());
     write(lock_fd_, buf, n);
@@ -103,12 +88,16 @@ void DaemonApp::signal_handler(int sig)
     if (instance_)
         instance_->stop_ = sig;
 }
+
 bool DaemonApp::setup_signals()
 {
     instance_ = this;
-    signal(SIGINT,&DaemonApp::signal_handler);
-    signal(SIGTERM, &DaemonApp::signal_handler);
-    signal(SIGQUIT, &DaemonApp::signal_handler);
+    if (signal(SIGINT, &DaemonApp::signal_handler) == SIG_ERR ||
+        signal(SIGTERM, &DaemonApp::signal_handler) == SIG_ERR ||
+        signal(SIGQUIT, &DaemonApp::signal_handler) == SIG_ERR)
+    {
+        return false;    
+    }
     return true;
 }
 

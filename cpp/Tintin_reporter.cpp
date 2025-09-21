@@ -3,7 +3,17 @@
 #include <ctime>
 #include <unistd.h>
 
-Tintin_reporter::Tintin_reporter(){};
+Tintin_reporter::Tintin_reporter()
+{
+    char* pass = std::getenv("PASS");
+    char* to = std::getenv("TO");
+    this->to = "josephardev@gmail.com";
+    this->pass = "";
+    if (pass)
+        this->pass = pass;
+    if (to)
+        this->to = to;
+};
 Tintin_reporter::~Tintin_reporter()
 {
     if (Info_.is_open()) Info_.close();
@@ -15,13 +25,13 @@ bool Tintin_reporter::create_dir()
 {
     struct stat st;
 
-    if (stat("/var/log/matt_daemon", &st) == 0)
+    if (stat(BASE_PATH, &st) == 0)
     {
         if (S_ISDIR(st.st_mode))
             return true;
         return false;
     }
-    if (mkdir("/var/log/matt_daemon", 0755) == -1)
+    if (mkdir(BASE_PATH, 0755) == -1)
         return false;
 
     return true;
@@ -31,15 +41,12 @@ bool Tintin_reporter::init()
 {
     if (!create_dir())
         return false;
-    Info_.open("/var/log/matt_daemon/Info.log", std::ios::out | std::ios::app);
-    Error_.open("/var/log/matt_daemon/Error.log", std::ios::out | std::ios::app);
-    Log_.open("/var/log/matt_daemon/Log.log", std::ios::out | std::ios::app);
+    Info_.open(INFO_PATH, std::ios::out | std::ios::app);
+    Error_.open(ERROR_PATH, std::ios::out | std::ios::app);
+    Log_.open(LOG_PATH, std::ios::out | std::ios::app);
 
     if (!Info_ || !Error_ || !Log_)
-    {
-        printf("dddd");
         return false;
-    }
     log(INFO, "Started.");
     return true;
 };
@@ -75,27 +82,24 @@ void Tintin_reporter::log(level level, std::string message)
         }
 };
 
-
 void Tintin_reporter::send_mail(std::string msg)
 {
     std::ofstream email("email.txt");
-    std::string to = std::getenv("TO");
-    if (to.empty())
-        to = "josephardev@gmail.com";
-    
-    email << "From: Joseph josephardev@gmail.com\n";
-    email << "To: Recipient josephardev@gmail.com\n";
-    email << "Subject:Email From DaemonApp\n\n";
+
+    email << "From: Joseph <josephardev@gmail.com>\n";
+    email << "To: " << this->to << "\n";
+    email << "Subject: Email From DaemonApp\n\n";
     email << msg;
     email.close();
 
     std::string cmd = "curl --url 'smtps://smtp.gmail.com:465' "
                       "--ssl-reqd "
                       "--mail-from 'josephardev@gmail.com' "
-                      "--mail-rcpt 'josephardev@gmail.com' "
-                      "--user 'josephardev@gmail.com:password' "
+                      "--mail-rcpt \"" + this->to + "\" "
+                      "--user \"josephardev@gmail.com:" + this->pass + "\" "
                       "--upload-file email.txt";
+    if (system(cmd.c_str()) != 0)
+        this->log(ERROR, std::string("ERROR while sending mail\n").append(cmd));
 
-    system(cmd.c_str());
     unlink("email.txt");
-};
+}

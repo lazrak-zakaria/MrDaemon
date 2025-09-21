@@ -9,6 +9,10 @@ enum level {
     LOG,
     INFO
 };
+#define BASE_PATH  "/var/log/matt_daemon"
+#define ERROR_PATH  "/var/log/matt_daemon/Error.log"
+#define LOG_PATH  "/var/log/matt_daemon/Log.log"
+#define INFO_PATH  "/var/log/matt_daemon/Info.log"
 
 class Tintin_reporter
 {
@@ -23,8 +27,10 @@ class Tintin_reporter
         void send_mail(std::string msg);
         Tintin_reporter(const Tintin_reporter& other) = delete;
         Tintin_reporter& operator=(const Tintin_reporter& other) = delete;
-    
+        
         private:
+            std::string to;
+            std::string pass;
             std::ofstream Info_;
             std::ofstream Error_;
             std::ofstream Log_;

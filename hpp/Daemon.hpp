@@ -21,7 +21,7 @@ class DaemonApp
         int lock_fd_;
         static DaemonApp* instance_;
         static void signal_handler(int sig);
-        int stop_;
+        volatile sig_atomic_t stop_;
         DaemonApp(const DaemonApp& other) = delete;
         DaemonApp& operator=(const DaemonApp& other) = delete;
         bool create_lock();

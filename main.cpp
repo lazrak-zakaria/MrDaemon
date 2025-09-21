@@ -16,5 +16,4 @@ int main()
     if (!app.init())
         return 1;
     return app.run();
-
 }
