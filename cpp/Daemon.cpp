@@ -154,9 +154,7 @@ int DaemonApp::run()
     {
         std::string name = signal_name(instance_->stop_);
         report_->log(INFO, std::string("Signal handler. type: ").append(name));
-        //report_->send_mail(std::string("Daemon Quitted Using Signal Of Type ").append(name));
+        report_->send_mail(std::string("Daemon Quitted Using Signal Of Type ").append(name));
     }
-
-    report_->log(LOG, "User wa3333: ");
     return 0;
 };
