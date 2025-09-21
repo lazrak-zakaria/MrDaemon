@@ -63,7 +63,6 @@ bool DaemonApp::daemonize()
         return false;
     if (pid > 0)
         exit(0);
-    std::cout << "child" << std::endl;
     if (setsid() < 0)
         return false;
     pid = fork();
