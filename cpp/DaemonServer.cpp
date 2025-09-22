@@ -188,7 +188,7 @@ bool    DaemonServer::run()
                     {
                         if ("quit" == data)
                         {
-                            report_->log(LOG, "Request quit.");
+                            report_->log(INFO, "Request quit.");
                             return 1;
                         }
                         report_->log(LOG, "User input: " + data);
